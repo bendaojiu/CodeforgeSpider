@@ -1,110 +1,24 @@
-#-*- coding:utf-8 -*-
-import sys
-from PyQt5.QtWidgets import (QPushButton, QLineEdit, QHBoxLayout, QVBoxLayout, QWidget, QApplication, QComboBox,
-                             QListWidget, QLabel, QMessageBox)
-import requests
-import re
-from bs4 import BeautifulSoup
-
-#ÍøÒ³Ïà¹Ø²Ù×÷
-pagenumber = 1
-objSearch = "abc"
-URL = "www.codeforge.cn"
-objURL = "http://www.codeforge.cn/article/185551"
-searchURL = "http://www.codeforge.cn/s/"+str(pagenumber)+"/"+objSearch
-DIR = "/home/ben/test/"
-
-#»ñÈ¡ÍøÒ³Ô´Âë
-def getHtml(url):
-    r = requests.get(url)
-    return r.text
-
-#»ñÈ¡ÎÄ¼şµØÖ·
-def getFileURL(text):
-    obj = re.compile('/read/\d+/\w+.\w+_html')
-    #print text
-    return obj.findall(text)
-
-#»ñÈ¡ÎÄ¼şÃû
-def getFileName(text):
-    obj = re.compile('\w+\.\w{1,3}')
-    return obj.search(text).group()
-
-#»ñÈ¡ÎÄ¼şÄÚÈİ
-def getContent(text):
-    soup = BeautifulSoup(text)
-    return soup.pre.string
-
-def getProjectName(text):
-    soup = BeautifulSoup(text)
-    a = soup.title.string
-    b = ""
-    for i in a:
-        if i == " ":
-            break
-        else:
-            b = b+i
-    return b
-
-#´´½¨¹¤³ÌÎÄ¼ş¼Ğ
-#def MakeProject(name, path):
-#´´½¨ÎÄ¼ş²¢Ğ´ÈëÄÚÈİ
-#def MakeFile(name, content):
-class UI(QWidget):
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QMessageBox
+  
+class MyWindow(QtWidgets.QWidget):
     def __init__(self):
-        super().__init__()
-        searchBtn = QPushButton('ËÑË÷')
-        searchBtn.clicked.connect(self.search())
-        searchEdit = QLineEdit('ÇëÊäÈëËÑË÷ÄÚÈİ', self)
-        hbox1 = QHBoxLayout()
-        hbox1.addWidget(searchEdit)
-        hbox1.addWidget(searchBtn)
+        super(MyWindow,self).__init__()
+        self.myButton = QtWidgets.QPushButton(self)
+        self.myButton.setObjectName("myButton")
+        self.myButton.setText("Test")
+        self.myButton.clicked.connect(self.msg)
 
-        downBtn = QPushButton('ÏÂÔØ')
-        downBtn.setEnabled(False)
-        contentLabel = QLabel()
-        vbox2 = QVBoxLayout()
-        vbox2.addWidget(contentLabel)
-        vbox2.addWidget(downBtn)
+    def msg(self):
+        reply = QMessageBox.information(self,                         #ä½¿ç”¨infomationä¿¡æ¯æ¡†
+                                    "æ ‡é¢˜",
+                                    "æ¶ˆæ¯",
+                                    QMessageBox.Yes | QMessageBox.No)
 
-        titleList = QListWidget()
-        hbox2 = QHBoxLayout()
-        hbox2.addWidget(titleList)
-        hbox2.addLayout(vbox2)
-
-        firstBtn = QPushButton('Ê×Ò³')
-        firstBtn.setEnabled(False)
-        preBtn = QPushButton('Ç°Ò»Ò³')
-        preBtn.setEnabled(False)
-        curBox = QComboBox()
-        behindBtn = QPushButton('ÏÂÒ»Ò³')
-        behindBtn.setEnabled(False)
-        lastBtn = QPushButton('Ä©Ò³')
-        lastBtn.setEnabled(False)
-        hbox3 = QHBoxLayout()
-        hbox3.addWidget(firstBtn)
-        hbox3.addWidget(preBtn)
-        hbox3.addWidget(curBox)
-        hbox3.addWidget(behindBtn)
-        hbox3.addWidget(lastBtn)
-
-        vbox = QVBoxLayout()
-        vbox.addLayout(hbox1)
-        vbox.addLayout(hbox2)
-        vbox.addLayout(hbox3)
-
-        self.setLayout(vbox)
-        self.show()
-
-    def search(self):
-        if len(self.searchEdit.getText()) < 2:
-            QMessageBox.Information(self, tr('ÌáÊ¾'), tr('²»ÄÜÊäÈëÉÙÓÚÁ½¸ö×Ö·û'))
-            return
-        return
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ui = UI()
-    print('hello')
-    sys.exit(app.exec_())
- 
+if __name__=="__main__":  
+    import sys  
+  
+    app=QtWidgets.QApplication(sys.argv)  
+    myshow=MyWindow()
+    myshow.show()
+    sys.exit(app.exec_())  

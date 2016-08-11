@@ -10,8 +10,7 @@ from bs4 import BeautifulSoup
 pagenumber = 1
 objSearch = "abc"
 URL = "www.codeforge.cn"
-objURL = "http://www.codeforge.cn/article/185551"
-searchURL = "http://www.codeforge.cn/s/"+str(pagenumber)+"/"+objSearch
+searchURL = "http://www.codeforge.cn/s/" #这是基础网址，后面还需要加上 str(pagenumber) 和 "/" 和 objSearch
 DIR = "/home/ben/test/"
 
 #获取网页源码
@@ -53,58 +52,63 @@ def getProjectName(text):
 class UI(QWidget):
     def __init__(self):
         super().__init__()
-        searchBtn = QPushButton('搜索')
-        searchBtn.clicked.connect(self.search())
-        searchEdit = QLineEdit('请输入搜索内容', self)
-        hbox1 = QHBoxLayout()
-        hbox1.addWidget(searchEdit)
-        hbox1.addWidget(searchBtn)
+        self.searchBtn = QPushButton('搜索')
+        self.searchEdit = QLineEdit()
+        self.searchEdit.setPlaceholderText('请输入搜索内容')
+        self.hbox1 = QHBoxLayout()
+        self.hbox1.addWidget(self.searchEdit)
+        self.hbox1.addWidget(self.searchBtn)
 
-        downBtn = QPushButton('下载')
-        downBtn.setEnabled(False)
-        contentLabel = QLabel()
-        vbox2 = QVBoxLayout()
-        vbox2.addWidget(contentLabel)
-        vbox2.addWidget(downBtn)
+        self.downBtn = QPushButton('下载')
+        self.downBtn.setEnabled(False)
+        self.contentLabel = QLabel()
+        self.vbox2 = QVBoxLayout()
+        self.vbox2.addWidget(self.contentLabel)
+        self.vbox2.addWidget(self.downBtn)
 
-        titleList = QListWidget()
-        hbox2 = QHBoxLayout()
-        hbox2.addWidget(titleList)
-        hbox2.addLayout(vbox2)
+        self.titleList = QListWidget()
+        self.hbox2 = QHBoxLayout()
+        self.hbox2.addWidget(self.titleList)
+        self.hbox2.addLayout(self.vbox2)
 
-        firstBtn = QPushButton('首页')
-        firstBtn.setEnabled(False)
-        preBtn = QPushButton('前一页')
-        preBtn.setEnabled(False)
-        curBox = QComboBox()
-        behindBtn = QPushButton('下一页')
-        behindBtn.setEnabled(False)
-        lastBtn = QPushButton('末页')
-        lastBtn.setEnabled(False)
-        hbox3 = QHBoxLayout()
-        hbox3.addWidget(firstBtn)
-        hbox3.addWidget(preBtn)
-        hbox3.addWidget(curBox)
-        hbox3.addWidget(behindBtn)
-        hbox3.addWidget(lastBtn)
+        self.firstBtn = QPushButton('首页')
+        self.firstBtn.setEnabled(False)
+        self.preBtn = QPushButton('前一页')
+        self.preBtn.setEnabled(False)
+        self.curBox = QComboBox()
+        self.behindBtn = QPushButton('下一页')
+        self.behindBtn.setEnabled(False)
+        self.lastBtn = QPushButton('末页')
+        self.lastBtn.setEnabled(False)
+        self.hbox3 = QHBoxLayout()
+        self.hbox3.addWidget(self.firstBtn)
+        self.hbox3.addWidget(self.preBtn)
+        self.hbox3.addWidget(self.curBox)
+        self.hbox3.addWidget(self.behindBtn)
+        self.hbox3.addWidget(self.lastBtn)
 
-        vbox = QVBoxLayout()
-        vbox.addLayout(hbox1)
-        vbox.addLayout(hbox2)
-        vbox.addLayout(hbox3)
+        self.vbox = QVBoxLayout()
+        self.vbox.addLayout(self.hbox1)
+        self.vbox.addLayout(self.hbox2)
+        self.vbox.addLayout(self.hbox3)
 
-        self.setLayout(vbox)
-        self.show()
+        self.searchBtn.clicked.connect(self.search)
+        
+        self.setLayout(self.vbox)
+       
 
     def search(self):
-        if len(self.searchEdit.getText()) < 2:
-            QMessageBox.Information(self, tr('提示'), tr('不能输入少于两个字符'))
-            return
-        return
-
+        if len(self.searchEdit.text()) < 2:
+            QMessageBox.Information(self, '提示', '不能输入少于两个字符', QMessageBox.Yes)
+        #以上有问题，不能实现检测输入内容是不是小于两个
+        objSearch = self.searchEdit.text()
+        print(searchURL+"1/"+objSearch)
+        #res = getHtml(searchURL+"1/"+objSearch)
+        
+        
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ui = UI()
-    print('hello')
+    ui.show()
     sys.exit(app.exec_())
  
