@@ -10,8 +10,7 @@ from bs4 import BeautifulSoup
 #网页相关操作
 pagenumber = 1
 curpagenumber = 1
-objSearch = "abc"
-URL = "www.codeforge.cn"
+URL = "http://www.codeforge.cn"
 searchURL = "http://www.codeforge.cn/s/" #这是基础网址，后面还需要加上 str(pagenumber) 和 "/" 和 objSearch
 DIR = "/home/ben/test/"
 titList = []    #用于储存搜索网页得到的标题
@@ -69,6 +68,8 @@ class UI(QWidget):
         self.downBtn = QPushButton('下载')
         self.downBtn.setEnabled(False)
         self.contentLabel = QLabel()
+        #设置自动换行
+        self.contentLabel.setWordWrap(True)
         self.vbox2 = QVBoxLayout()
         self.vbox2.addWidget(self.contentLabel)
         self.vbox2.addWidget(self.downBtn)
@@ -140,7 +141,7 @@ class UI(QWidget):
             myURL = objmyURL.findall(i)
             URLList.append(str(myURL))
         for i in titList:
-            self.titleList.addItem(str(i))
+            self.titleList.addItem(str(i)[2:-2])
            
         #设置下一页，末页按钮可用
         self.behindBtn.setEnabled(True)
@@ -148,8 +149,23 @@ class UI(QWidget):
         
     
     def ListWidgetChange(self):
+        #downBtn可用
+        self.downBtn.setEnabled(True)
         whichChoice = self.titleList.currentRow()
-        print(whichChoice)
+        #临时需要增加的字符串
+        tmpAdd = str(URLList[whichChoice + 1])
+        #截取从第三个开始到倒数第二个字符之前
+        tmpAdd = tmpAdd[2:-2]
+        currentURL = URL + tmpAdd
+        print(currentURL)
+        tmpCon = requests.get(currentURL).text
+        nowobj = re.compile('<META NAME="description" CONTENT=".*">')
+        nowCon = nowobj.findall(tmpCon)
+        nowCon = str(nowCon)[36:-7]
+        nowCon.strip()
+        print(nowCon)
+        self.contentLabel.setText(nowCon)
+        
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
