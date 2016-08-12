@@ -54,7 +54,7 @@ class UI(QWidget):
         super().__init__()
         self.searchBtn = QPushButton('搜索')
         self.searchEdit = QLineEdit()
-        self.searchEdit.setPlaceholderText('请输入搜索内容')
+        self.searchEdit.setPlaceholderText('请输入搜索关键字，空格分格')
         self.hbox1 = QHBoxLayout()
         self.hbox1.addWidget(self.searchEdit)
         self.hbox1.addWidget(self.searchBtn)
@@ -95,15 +95,15 @@ class UI(QWidget):
         self.searchBtn.clicked.connect(self.search)
         
         self.setLayout(self.vbox)
-       
+        self.resize(500, 600)
 
     def search(self):
-        if len(self.searchEdit.text()) < 2:
-            QMessageBox.Information(self, '提示', '不能输入少于两个字符', QMessageBox.Yes)
-        #以上有问题，不能实现检测输入内容是不是小于两个
         objSearch = self.searchEdit.text()
-        print(searchURL+"1/"+objSearch)
-        #res = getHtml(searchURL+"1/"+objSearch)
+        if len(objSearch) < 2:
+            QMessageBox.information(self, '提示', '不能输入少于两个字符')
+       
+        objSearch = re.sub(' ', '+', objSearch)
+        res = getHtml(searchURL+"1/"+objSearch)
         
         
 if __name__ == '__main__':
