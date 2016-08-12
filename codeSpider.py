@@ -2,6 +2,7 @@
 import sys
 from PyQt5.QtWidgets import (QPushButton, QLineEdit, QHBoxLayout, QVBoxLayout, QWidget, QApplication, QComboBox,
                              QListWidget, QLabel, QMessageBox)
+from PyQt5.QtCore import Qt, pyqtSignal, QObject, pyqtSlot
 import requests
 import re
 from bs4 import BeautifulSoup
@@ -13,6 +14,8 @@ objSearch = "abc"
 URL = "www.codeforge.cn"
 searchURL = "http://www.codeforge.cn/s/" #这是基础网址，后面还需要加上 str(pagenumber) 和 "/" 和 objSearch
 DIR = "/home/ben/test/"
+titList = []    #用于储存搜索网页得到的标题
+URLList = []    #用于储存搜索网页得到的网址
 
 #获取网页源码
 def getHtml(url):
@@ -51,6 +54,9 @@ def getProjectName(text):
 #创建文件并写入内容
 #def MakeFile(name, content):
 class UI(QWidget):
+    #QListWidget中选择的序号
+    whichChoice = 0
+    
     def __init__(self):
         super().__init__()
         self.searchBtn = QPushButton('搜索')
@@ -94,12 +100,15 @@ class UI(QWidget):
         self.vbox.addLayout(self.hbox3)
 
         self.searchBtn.clicked.connect(self.search)
+        self.titleList.itemSelectionChanged.connect(self.ListWidgetChange)
         
         self.setLayout(self.vbox)
         self.resize(400, 400)
         self.setWindowTitle('CodeforgeDown')
 
     def search(self):
+        #设置显示的当前网页序号
+        curpagenumber = 1
         objSearch = self.searchEdit.text()
         if len(objSearch) < 2:
             QMessageBox.information(self, '提示', '不能输入少于两个字符')
@@ -116,7 +125,32 @@ class UI(QWidget):
         #获取相关项网址和标题
         obj = re.compile("<a href='.*' title='.*' target")
         res = obj.findall(content)
+        for i in res:
+        #获得标题
+            objTitle = re.compile("title='.*' target")
+            mytitle = objTitle.findall(i)
+            mytitle = re.sub('title=', '', str(mytitle))
+            mytitle = re.sub(' target', '', str(mytitle))
+            mytitle = re.sub("'", '', str(mytitle))
+            mytitle = re.sub('<font color=red>', '', str(mytitle))
+            mytitle = re.sub('</font>', '', str(mytitle))
+            titList.append(str(mytitle))
+            #获得网址
+            objmyURL = re.compile("/\w+/\d+")
+            myURL = objmyURL.findall(i)
+            URLList.append(str(myURL))
+        for i in titList:
+            self.titleList.addItem(str(i))
+           
+        #设置下一页，末页按钮可用
+        self.behindBtn.setEnabled(True)
+        self.lastBtn.setEnabled(True)
         
+    
+    def ListWidgetChange(self):
+        whichChoice = self.titleList.currentRow()
+        print(whichChoice)
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ui = UI()
