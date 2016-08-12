@@ -1,24 +1,26 @@
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QMessageBox
-  
-class MyWindow(QtWidgets.QWidget):
+import re
+import requests
+import sys
+from PyQt5.QtWidgets import QWidget, QComboBox, QApplication, QListWidget
+
+content = requests.get("http://www.codeforge.cn/s/1/%E7%BA%BF%E7%A8%8B").text
+obj = re.compile("<a href='.*' title='.*' target")
+res = obj.findall(content)
+
+
+
+class UI(QWidget):
     def __init__(self):
-        super(MyWindow,self).__init__()
-        self.myButton = QtWidgets.QPushButton(self)
-        self.myButton.setObjectName("myButton")
-        self.myButton.setText("Test")
-        self.myButton.clicked.connect(self.msg)
-
-    def msg(self):
-        reply = QMessageBox.information(self,                         #使用infomation信息框
-                                    "标题",
-                                    "消息",
-                                    QMessageBox.Yes | QMessageBox.No)
-
-if __name__=="__main__":  
-    import sys  
-  
-    app=QtWidgets.QApplication(sys.argv)  
-    myshow=MyWindow()
-    myshow.show()
-    sys.exit(app.exec_())  
+        super().__init__()
+        self.curListWidget = QListWidget()
+        for i in res:
+            self.curListWidget.addItem(i)
+        self.curListWidget.move(20, 20)
+        
+        self.setGeometry(200, 200, 200, 200)
+        
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ui = UI()
+    ui.show()
+    sys.exit(app.exec_())

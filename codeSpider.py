@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 
 #网页相关操作
 pagenumber = 1
+curpagenumber = 1
 objSearch = "abc"
 URL = "www.codeforge.cn"
 searchURL = "http://www.codeforge.cn/s/" #这是基础网址，后面还需要加上 str(pagenumber) 和 "/" 和 objSearch
@@ -95,7 +96,8 @@ class UI(QWidget):
         self.searchBtn.clicked.connect(self.search)
         
         self.setLayout(self.vbox)
-        self.resize(500, 600)
+        self.resize(400, 400)
+        self.setWindowTitle('CodeforgeDown')
 
     def search(self):
         objSearch = self.searchEdit.text()
@@ -103,8 +105,17 @@ class UI(QWidget):
             QMessageBox.information(self, '提示', '不能输入少于两个字符')
        
         objSearch = re.sub(' ', '+', objSearch)
-        res = getHtml(searchURL+"1/"+objSearch)
-        
+        content = getHtml(searchURL+"1/"+objSearch)   
+        #获取搜索结果总页数
+        obj = re.compile('\d+</a> <a href="/s/2')
+        res = obj.findall(content)
+        pagenumber = re.sub('</a> <a href="/s/2', '', res[0])
+        for i in range(int(pagenumber)):
+            self.curBox.addItem(str(i+1))
+            
+        #获取相关项网址和标题
+        obj = re.compile("<a href='.*' title='.*' target")
+        res = obj.findall(content)
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
