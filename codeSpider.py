@@ -8,8 +8,6 @@ import re
 from bs4 import BeautifulSoup
 
 #网页相关操作
-pagenumber = 1
-curpagenumber = 1
 URL = "http://www.codeforge.cn"
 searchURL = "http://www.codeforge.cn/s/" #这是基础网址，后面还需要加上 str(pagenumber) 和 "/" 和 objSearch
 DIR = "/home/ben/test/"
@@ -55,6 +53,9 @@ def getProjectName(text):
 class UI(QWidget):
     #QListWidget中选择的序号
     whichChoice = 0
+    pagenumber = 1
+    curpagenumber = 1
+    objSearch = ''
     
     def __init__(self):
         super().__init__()
@@ -102,25 +103,27 @@ class UI(QWidget):
 
         self.searchBtn.clicked.connect(self.search)
         self.titleList.itemSelectionChanged.connect(self.ListWidgetChange)
+        self.behindBtn.clicked.connect(self.behindBtnClicked)
         
         self.setLayout(self.vbox)
         self.resize(400, 400)
         self.setWindowTitle('CodeforgeDown')
 
     def search(self):
+        self.objSearch = ''
         #设置显示的当前网页序号
-        curpagenumber = 1
-        objSearch = self.searchEdit.text()
-        if len(objSearch) < 2:
+        self.curpagenumber = 1
+        self.objSearch = self.searchEdit.text()
+        if len(self.objSearch) < 2:
             QMessageBox.information(self, '提示', '不能输入少于两个字符')
        
-        objSearch = re.sub(' ', '+', objSearch)
-        content = getHtml(searchURL+"1/"+objSearch)   
+        objSearch = re.sub(' ', '+', self.objSearch)
+        content = getHtml(searchURL+"1/"+self.objSearch)
         #获取搜索结果总页数
         obj = re.compile('\d+</a> <a href="/s/2')
         res = obj.findall(content)
-        pagenumber = re.sub('</a> <a href="/s/2', '', res[0])
-        for i in range(int(pagenumber)):
+        self.pagenumber = re.sub('</a> <a href="/s/2', '', res[0])
+        for i in range(int(self.pagenumber)):
             self.curBox.addItem(str(i+1))
             
         #获取相关项网址和标题
@@ -146,7 +149,8 @@ class UI(QWidget):
         #设置下一页，末页按钮可用
         self.behindBtn.setEnabled(True)
         self.lastBtn.setEnabled(True)
-        
+
+       
     
     def ListWidgetChange(self):
         #downBtn可用
@@ -159,12 +163,47 @@ class UI(QWidget):
         currentURL = URL + tmpAdd
         print(currentURL)
         tmpCon = requests.get(currentURL).text
+        print(tmpCon)
         nowobj = re.compile('<META NAME="description" CONTENT=".*">')
         nowCon = nowobj.findall(tmpCon)
+        print(nowCon)
         nowCon = str(nowCon)[36:-7]
         nowCon.strip()
         print(nowCon)
         self.contentLabel.setText(nowCon)
+      
+      
+      
+    def behindBtnClicked(self):
+        if self.curpagenumber == int(self.pagenumber):
+            self.behindBtn.setEnabled(False)
+            self.lastBtn.setEnabled(False)
+            QMessageBox.information(self, '提示', '已经是最后一页了！！！')
+        else:
+            titList = []
+            URLList = []
+            self.titleList.clear()
+            self.curpagenumber += 1
+            content = getHtml(searchURL+self.curpagenumber+"/"+self.objSearch)
+            #获取相关项网址和标题
+            obj = re.compile("<a href='.*' title='.*' target")
+            res = obj.findall(content)
+            for i in res:
+                #获得标题
+                objTitle = re.compile("title='.*' target")
+                mytitle = objTitle.findall(i)
+                mytitle = re.sub('title=', '', str(mytitle))
+                mytitle = re.sub(' target', '', str(mytitle))
+                mytitle = re.sub("'", '', str(mytitle))
+                mytitle = re.sub('<font color=red>', '', str(mytitle))
+                mytitle = re.sub('</font>', '', str(mytitle))
+                titList.append(str(mytitle))
+                #获得网址
+                objmyURL = re.compile("/\w+/\d+")
+                myURL = objmyURL.findall(i)
+                URLList.append(str(myURL))
+            for i in titList:
+                self.titleList.addItem(str(i)[2:-2])
         
 
 if __name__ == '__main__':
