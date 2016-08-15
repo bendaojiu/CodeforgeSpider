@@ -108,6 +108,7 @@ class UI(QWidget):
         self.titleList.itemSelectionChanged.connect(self.ListWidgetChange)
         self.firstBtn.clicked.connect(self.firstBtnClicked)
         self.preBtn.clicked.connect(self.preBtnClicked)
+        self.curBox.currentIndexChanged.connect(self.curBoxChanged)
         self.behindBtn.clicked.connect(self.behindBtnClicked)
         self.lastBtn.clicked.connect(self.lastBtnClicked)
         
@@ -119,6 +120,10 @@ class UI(QWidget):
         self.objSearch = ''
         #设置显示的当前网页序号
         self.curpagenumber = 1
+        self.titleList.clear()
+        self.curBox.clear()
+        self.titList = []
+        self.URLList = []
         self.objSearch = self.searchEdit.text()
         if len(self.objSearch) < 2:
             QMessageBox.information(self, '提示', '不能输入少于两个字符')
@@ -129,18 +134,14 @@ class UI(QWidget):
         #获取搜索结果总页数
         obj = re.compile('\d+</a> <a href="/s/2')
         res = obj.findall(content)
-        self.pagenumber = re.sub('</a> <a href="/s/2', '', res[0])
+        self.pagenumber = int(re.sub('</a> <a href="/s/2', '', res[0]))
         for i in range(int(self.pagenumber)):
             self.curBox.addItem(str(i+1))
-        self.getURLAndTitle(content)
-        self.titleList.clear()
-        for i in self.titList:
-            self.titleList.addItem(i[2:-2])
-
+        self.curBox.setCurrentIndex(self.curpagenumber - 1)
         #设置下一页，末页按钮可用
         self.behindBtn.setEnabled(True)
         self.lastBtn.setEnabled(True)
-        self.curBox.setCurrentIndex(self.curpagenumber - 1)
+        
        
     
     def ListWidgetChange(self):
@@ -148,19 +149,15 @@ class UI(QWidget):
         self.downBtn.setEnabled(True)
         whichChoice = self.titleList.currentRow()
         #临时需要增加的字符串
-        tmpAdd = str(URLList[whichChoice + 1])
+        tmpAdd = str(self.URLList[whichChoice + 1])
         #截取从第三个开始到倒数第二个字符之前
         tmpAdd = tmpAdd[2:-2]
         currentURL = URL + tmpAdd
-        print(currentURL)
         tmpCon = requests.get(currentURL).text
-        print(tmpCon)
         nowobj = re.compile('<META NAME="description" CONTENT=".*">')
         nowCon = nowobj.findall(tmpCon)
-        print(nowCon)
         nowCon = str(nowCon)[36:-7]
         nowCon.strip()
-        print(nowCon)
         self.contentLabel.setText(nowCon)
         
       
@@ -194,6 +191,31 @@ class UI(QWidget):
             self.preBtn.setEnabled(False)    
            
       
+    def curBoxChanged(self):
+        self.curpagenumber = self.curBox.currentIndex() + 1
+        self.titleList.clear()
+        content = getHtml(searchURL+str(self.curpagenumber)+"/"+self.objSearch)
+        self.getURLAndTitle(content)
+        self.titleList.clear()
+        for i in self.titList:
+            self.titleList.addItem(i[2:-2])
+        self.curBox.setCurrentIndex(self.curpagenumber - 1)
+        self.firstBtn.setEnabled(True)
+        self.preBtn.setEnabled(True)
+  
+        if self.curpagenumber == 1:
+            self.firstBtn.setEnabled(False)
+            self.preBtn.setEnabled(False)
+        else:
+            self.firstBtn.setEnabled(True)
+            self.preBtn.setEnabled(True)
+        if self.curpagenumber == self.pagenumber:
+            self.behindBtn.setEnabled(False)
+            self.lastBtn.setEnabled(False)
+        else:
+            self.behindBtn.setEnabled(True)
+            self.lastBtn.setEnabled(True)
+    
     def behindBtnClicked(self):
         self.titleList.clear()
         self.curpagenumber += 1
@@ -247,6 +269,7 @@ class UI(QWidget):
             objmyURL = re.compile("/\w+/\d+")
             myURL = objmyURL.findall(i)
             self.URLList.append(str(myURL))
+            
 
 
 if __name__ == '__main__':
