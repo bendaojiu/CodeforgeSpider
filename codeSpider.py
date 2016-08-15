@@ -1,5 +1,5 @@
 #-*- coding:utf-8 -*-
-import sys
+import sys, os
 from PyQt5.QtWidgets import (QPushButton, QLineEdit, QHBoxLayout, QVBoxLayout, QWidget, QApplication, QComboBox,
                              QListWidget, QLabel, QMessageBox)
 from PyQt5.QtCore import Qt, pyqtSignal, QObject, pyqtSlot
@@ -58,7 +58,6 @@ class UI(QWidget):
     objSearch = ''
     titList = []    #用于储存搜索网页得到的标题
     URLList = []    #用于储存搜索网页得到的网址
-
     
     def __init__(self):
         super().__init__()
@@ -106,12 +105,13 @@ class UI(QWidget):
 
         self.searchBtn.clicked.connect(self.search)
         self.titleList.itemSelectionChanged.connect(self.ListWidgetChange)
+        self.downBtn.clicked.connect(self.downBtnClicked)
         self.firstBtn.clicked.connect(self.firstBtnClicked)
         self.preBtn.clicked.connect(self.preBtnClicked)
         self.curBox.currentIndexChanged.connect(self.curBoxChanged)
         self.behindBtn.clicked.connect(self.behindBtnClicked)
         self.lastBtn.clicked.connect(self.lastBtnClicked)
-        
+    
         self.setLayout(self.vbox)
         self.resize(400, 400)
         self.setWindowTitle('CodeforgeDown')
@@ -270,8 +270,21 @@ class UI(QWidget):
             myURL = objmyURL.findall(i)
             self.URLList.append(str(myURL))
             
-
-
+    def downBtnClicked(self):
+        #获得路径
+        path = sys.path[0]
+        whichChoice = self.titleList.currentRow()
+        tmpAdd = str(self.titList[whichChoice + 1])
+        path = path + '\\' + tmpAdd[2:-2]
+        #判断文件是否存在
+        isExists = os.path.exists(path)
+        if not isExists:
+            #如果不存在
+            os.makedirs(path)
+        else:
+            #如果存在
+            QMessageBox.Information(self, '提示', '已存在目标目录，请检查是否已下载过！！！')
+        
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ui = UI()
