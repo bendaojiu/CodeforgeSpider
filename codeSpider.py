@@ -135,7 +135,7 @@ class UI(QWidget):
         self.downBtn.setEnabled(True)
         whichChoice = self.titleList.currentRow()
         #临时需要增加的字符串
-        tmpAdd = str(self.URLList[whichChoice + 1])
+        tmpAdd = str(self.URLList[whichChoice])
         #截取从第三个开始到倒数第二个字符之前
         tmpAdd = tmpAdd[2:-2]
         currentURL = URL + tmpAdd
@@ -260,7 +260,7 @@ class UI(QWidget):
         #获得路径
         path = sys.path[0]
         whichChoice = self.titleList.currentRow()
-        tmpAdd = str(self.titList[whichChoice + 1])
+        tmpAdd = str(self.titList[whichChoice])
         tmpurl = URL + str(self.URLList[whichChoice + 1])[2:-2]
  
         path = path + '\\' + tmpAdd[2:-2]
