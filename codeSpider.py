@@ -21,7 +21,7 @@ def getHtml(url):
 
 #获取文件地址
 def getFileURL(text):
-    obj = re.compile('/read/\d+/\w+.\w+_html')
+    obj = re.compile('/read/\d+/\w+.\w+__html')
     #print text
     return obj.findall(text)
 
@@ -35,21 +35,7 @@ def getContent(text):
     soup = BeautifulSoup(text)
     return soup.pre.string
 
-def getProjectName(text):
-    soup = BeautifulSoup(text)
-    a = soup.title.string
-    b = ""
-    for i in a:
-        if i == " ":
-            break
-        else:
-            b = b+i
-    return b
 
-#创建工程文件夹
-#def MakeProject(name, path):
-#创建文件并写入内容
-#def MakeFile(name, content):
 class UI(QWidget):
     #QListWidget中选择的序号
     whichChoice = 0
@@ -275,12 +261,31 @@ class UI(QWidget):
         path = sys.path[0]
         whichChoice = self.titleList.currentRow()
         tmpAdd = str(self.titList[whichChoice + 1])
+        tmpurl = URL + str(self.URLList[whichChoice + 1])[2:-2]
+ 
         path = path + '\\' + tmpAdd[2:-2]
         #判断文件是否存在
         isExists = os.path.exists(path)
         if not isExists:
             #如果不存在
             os.makedirs(path)
+            os.chdir(path)
+            res = getHtml(tmpurl)
+            fileUrl = getFileURL(res)   #获取文件url
+            for i in fileUrl:
+                res = getHtml(URL + str(i))
+                fileName = getFileName(i)
+                filename = ''
+                for i in fileName:
+                    if i != '_':
+                        filename += i
+                    else:
+                        break
+                print(filename)
+                f = open(filename, 'w')
+                f.write(getContent(res))
+                f.close()
+                
         else:
             #如果存在
             QMessageBox.Information(self, '提示', '已存在目标目录，请检查是否已下载过！！！')
